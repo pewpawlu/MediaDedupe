@@ -2,12 +2,31 @@ services:
   mediadedupe:
     container_name: mediadedupe
     image: ghcr.io/parcival42/mediadedupe:latest
+
     ports:
-      - "8080:8080"
+      - "18473:8080"
+
     volumes:
-      - /path/to/your/media:/media
-      - /path/to/your/data:/data
+      # Media library - read only
+      - /volume1/media:/media:ro
+
+    tmpfs:
+      # Disposable MediaDedupe database/cache/state
+      - /data
+
     command: ["-d", "/media"]
+
     restart: unless-stopped
+
     environment:
-      - AUTH_SECRET=your_long_random_secret_here
+      - TZ=America/Chicago
+      - AUTH_SECRET=${AUTH_SECRET}
+      - DUPFINDER_DATA=/data
+
+    networks:
+      - mediadedupe_isolated
+
+networks:
+  mediadedupe_isolated:
+    driver: bridge
+    internal: true
